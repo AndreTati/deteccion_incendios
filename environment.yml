@@ -1,0 +1,30 @@
+# Entorno conda para el TP de detección temprana de incendios (D-Fire)
+#
+# Crear:   conda env create -f environment.yml
+# Activar: conda activate incendios-tp
+# Actualizar tras editar este archivo: conda env update -f environment.yml --prune
+
+name: incendios-tp
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - ffmpeg          # codecs de video para opencv (lectura/escritura de mp4)
+  - pip:
+      - ultralytics>=8.3.0      # YOLOv8 / YOLO11, trae torch/torchvision como dependencia
+      - opencv-python>=4.9
+      - numpy
+      - pandas
+      - matplotlib
+      - seaborn
+      - scikit-learn
+      - pyyaml
+      - tqdm
+      - pillow
+      - gradio>=4.0             # app de demo (nivel 2)
+      - kaggle                  # descarga del dataset D-Fire
+      - kagglehub
+      - jupyter
+      - ipykernel
+      - notebook

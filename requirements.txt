@@ -1,0 +1,16 @@
+ultralytics>=8.3.0
+opencv-python>=4.9
+numpy
+pandas
+matplotlib
+seaborn
+scikit-learn
+pyyaml
+tqdm
+pillow
+gradio>=4.0
+kaggle
+kagglehub
+jupyter
+ipykernel
+notebook
