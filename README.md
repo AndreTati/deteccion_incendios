@@ -80,8 +80,3 @@ Nombre de cada run: `{modelo}_{imgsz}_{neg|noneg}_s{seed}`, seed 42, 50 épocas,
 Resultados de test (mAP50 / mAP50-95): R1 0,759 / 0,434 · R3 0,779 / 0,455 · R4 0,773 / 0,444 · R5 0,699 / 0,402. Todas las métricas en `results/master.csv`.
 
 Clasificador de recortes (sobre R1, τ = 0,40, `p_real ≥ 0,5`): en test, las imágenes negativas con algún falso positivo bajan de 0,65 % a 0,10 %, a costa de −4,5 puntos de recall en humo y −0,9 en fuego (`figures/clasificador_recall_vs_fp.png`). Como R1 ya casi no se equivoca con las negativas del test (son casi duplicados de train), su efecto real se mide con el set de estrés y los videos.
-
-## Qué se versiona
-
-- **Sí:** notebooks, `.py`, `configs/`, `figures/`, `results/*.csv`, `videos/clips.csv` y `runs/<run>/` (curvas, matrices de confusión, `results.csv` y los pesos finales `weights/best.pt` de cada entrenamiento, ~60 MB en total).
-- **No:** `last.pt` y otros `.pt` sueltos (por ejemplo los preentrenados que baja Ultralytics), dataset y set de estrés (`data/`), videos, zips y cachés de predicciones (`results/errores/`).
