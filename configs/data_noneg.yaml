@@ -1,0 +1,10 @@
+# Generado por descarga.ipynb, no editar a mano.
+# Sin `path`: Ultralytics resuelve las rutas relativas a esta carpeta.
+# Train sin imágenes 'none' (R5 / H2). Val y test idénticos a data.yaml.
+train: ../data/data/train_noneg.txt
+val: ../data/data/val/images
+test: ../data/data/test/images
+
+names:
+  0: smoke
+  1: fire

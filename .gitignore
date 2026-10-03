@@ -1,1 +1,10 @@
 data/
+*.pt
+!runs/*/weights/best.pt
+runs/_data/
+*.zip
+videos/*
+!videos/clips.csv
+__pycache__/
+results/errores/
+plan-tp-vc2-deteccion-incendios.md

@@ -1,0 +1,9 @@
+# Generado por descarga.ipynb, no editar a mano.
+# Sin `path`: Ultralytics resuelve las rutas relativas a esta carpeta.
+train: ../data/data/train/images
+val: ../data/data/val/images
+test: ../data/data/test/images
+
+names:
+  0: smoke
+  1: fire
