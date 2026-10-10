@@ -191,12 +191,12 @@ Estos clips no permiten medir la latencia de alerta ni las falsas alarmas por ho
 
 \subsection{Análisis de errores}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{errores_fp_humo.jpg}
-\caption{Los 20 falsos positivos de humo de mayor confianza de R1 ($\tau=0{,}4$). En amarillo, la predicción contada como falso positivo; en verde, el \textit{ground truth}; en rojo y celeste, otras predicciones de fuego y humo. En muchos casos hay humo visible dentro de la caja y la discrepancia es de granularidad de la anotación.}
-\label{fig:errores}
-\end{figure*}
+% \begin{figure*}[t]
+% \centering
+% \includegraphics[width=\textwidth]{errores_fp_humo.jpg}
+% \caption{Los 20 falsos positivos de humo de mayor confianza de R1 ($\tau=0{,}4$). En amarillo, la predicción contada como falso positivo; en verde, el \textit{ground truth}; en rojo y celeste, otras predicciones de fuego y humo. En muchos casos hay humo visible dentro de la caja y la discrepancia es de granularidad de la anotación.}
+% \label{fig:errores}
+% \end{figure*}
 
 Revisamos los 20 falsos positivos de mayor confianza y los 20 falsos negativos de mayor área por clase de R1 a $\tau=0{,}4$. Ninguno de esos falsos positivos cae en una imagen negativa, y 5 son confusiones entre clases (humo detectado como fuego o al revés). En humo, una parte importante de los falsos positivos de alta confianza son predicciones correctas penalizadas por la anotación: el modelo marca toda la columna de humo mientras que el \textit{ground truth} la divide en cajas más chicas o cubre solo una parte, de modo que el IoU queda por debajo de \num{0.5} (Fig.~\ref{fig:errores}). Esto sugiere que las métricas de humo subestiman la utilidad del detector para la tarea de alerta, donde lo que importa es la presencia y no el contorno exacto.
 % TODO: completar results/errores_causas.csv y agregar aquí la distribución de causas.
@@ -218,6 +218,14 @@ Revisamos los 20 falsos positivos de mayor confianza y los 20 falsos negativos d
 % TODO: si se arma el set de estrés (analisis_errores.ipynb, sección 7), agregar sus resultados.
 
 El código, los pesos entrenados y las instrucciones de reproducción están disponibles en \url{https://github.com/AndreTati/deteccion_incendios}.
+
+\twocolumn[{%
+  \centering
+  \includegraphics[width=\textwidth]{errores_fp_humo.jpg}
+  \captionof{figure}{Los 20 falsos positivos de humo de mayor confianza de R1 ($\tau=0{,}4$). En amarillo, la predicción contada como falso positivo; en verde, el \textit{ground truth}; en rojo y celeste, otras predicciones de fuego y humo. En muchos casos hay humo visible dentro de la caja y la discrepancia es de granularidad de la anotación.}
+  \label{fig:errores}
+  \vspace{1.5em}
+}]
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
