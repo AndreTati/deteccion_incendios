@@ -1,0 +1,5 @@
+clip,archivo,duracion_s,fps_video,vid_stride,frames_procesados,tau,k,n,umbral_clf,frames_con_FP_sin_clf,frames_con_FP_con_clf,alertas_sin_clf,alertas_con_clf
+niebla,niebla.mp4,29.8,60,12,149,0.4,3,5,0.5,4,3,1,1
+noche,noche.mp4,35.9,50,10,180,0.4,3,5,0.5,0,0,0,0
+nublado_tormenta,nublado.mp4,55.6,50,10,279,0.4,3,5,0.5,3,0,1,0
+nublado_cumulos,nublado-2.mp4,34.3,50,10,172,0.4,3,5,0.5,0,0,0,0

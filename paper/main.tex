@@ -13,6 +13,7 @@
 \usepackage[locale=FR,group-digits=integer,group-minimum-digits=4,group-separator={.}]{siunitx}
 \usepackage{xurl}
 \usepackage{xcolor}
+\usepackage{capt-of}
 
 \graphicspath{{../figures/}{figuras/}}
 \sisetup{detect-all}
@@ -32,7 +33,7 @@ Visión por Computadora II -- Equipo 7}
 \maketitle
 
 \begin{abstract}
-Presentamos un prototipo de alerta temprana de incendios a partir de video que combina tres etapas: un detector YOLO11 de fuego y humo ajustado sobre D-Fire, un clasificador liviano que confirma o descarta cada recorte detectado y un criterio temporal K-de-N con estados normal, prealerta y alerta. Comparamos cuatro configuraciones del detector variando capacidad, resolución de entrada y presencia de imágenes negativas en el entrenamiento, y medimos latencia en CPU. El modelo \textit{nano} a \SI{640}{px} alcanza un mAP50 de \num{0.759} en test con \SI{56}{ms} por frame en CPU; el modelo \textit{medium} gana solo \num{0.020} de mAP50 a un costo cinco veces mayor. Entrenar con imágenes negativas reduce las imágenes sin incendio con algún falso positivo de \SI{28.8}{\percent} a \SI{0.65}{\percent} sin perder recall, y el clasificador de recortes las lleva a \SI{0.10}{\percent} a cambio de \num{4.5} puntos de recall en humo. Además, mostramos que cerca de la mitad de las imágenes del test oficial de D-Fire tienen un casi-duplicado en entrenamiento, por lo que las métricas sobre ese split son optimistas.
+Presentamos un prototipo de alerta temprana de incendios a partir de video que combina tres etapas: un detector YOLO11 de fuego y humo ajustado sobre D-Fire, un clasificador liviano que confirma o descarta cada recorte detectado y un criterio temporal K-de-N con estados normal, prealerta y alerta. Comparamos cuatro configuraciones del detector variando capacidad, resolución de entrada y presencia de imágenes negativas en el entrenamiento, y medimos latencia en CPU. El modelo \textit{nano} a \SI{640}{px} alcanza un mAP50 de \num{0.759} en test con \SI{56}{ms} por frame en CPU; el modelo \textit{medium} gana solo \num{0.020} de mAP50 a un costo cinco veces mayor. Entrenar con imágenes negativas reduce las imágenes sin incendio con algún falso positivo de \SI{28.8}{\percent} a \SI{0.65}{\percent} con un recall similar, y el clasificador de recortes las lleva a \SI{0.10}{\percent} a cambio de \num{4.5} puntos de recall en humo. En una prueba de estrés sobre cuatro videos sin incendio (niebla, noche y nubes), el sistema completo emite una sola falsa alarma, causada por niebla baja que el clasificador no distingue del humo. Además, mostramos que cerca de la mitad de las imágenes del test oficial de D-Fire tienen un casi-duplicado en entrenamiento, por lo que las métricas sobre ese split son optimistas.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -162,7 +163,7 @@ Este es el efecto más fuerte del estudio. A $\tau=0{,}4$, sin negativas en entr
 
 \subsection{Clasificador de recortes (H4)}
 
-En su validación (recortes de imágenes de entrenamiento separadas por imagen), el clasificador alcanza una exactitud de \num{0.942}, con precisión \num{0.933} y recall \num{0.953} para la clase \textit{confundible}. Sobre el test del detector R1 a $\tau=0{,}4$, exigir $p_{\mathrm{real}}\ge 0{,}5$ reduce las imágenes negativas con algún falso positivo de \SI{0.65}{\percent} a \SI{0.10}{\percent} (de \num{0.0070} a \num{0.0010} falsos positivos por imagen, siete veces menos), con una pérdida de \num{4.5} puntos de recall en humo (\num{0.717} a \num{0.673}) y \num{0.9} en fuego (\num{0.553} a \num{0.544}). Al variar el umbral del clasificador entre \num{0.1} y \num{0.9} se recorre ese compromiso (Fig.~\ref{fig:clf}): con \num{0.8} no queda ningún falso positivo en negativas, pero el recall de humo cae a \num{0.634}. El costo computacional es bajo: el sistema completo tarda \SI{63}{ms} por frame en CPU (\num{0.83} recortes por imagen en promedio), un \SI{12}{\percent} más que el detector solo. H4 se confirma en el test oficial, pero como R1 ya casi no comete errores en esas negativas, el beneficio real del clasificador debe medirse sobre escenas externas a D-Fire (Sección~VI).
+En su validación (recortes de imágenes de entrenamiento separadas por imagen), el clasificador alcanza una exactitud de \num{0.942}, con precisión \num{0.933} y recall \num{0.953} para la clase \textit{confundible}. Sobre el test del detector R1 a $\tau=0{,}4$, exigir $p_{\mathrm{real}}\ge 0{,}5$ reduce las imágenes negativas con algún falso positivo de \SI{0.65}{\percent} a \SI{0.10}{\percent} (de \num{0.0070} a \num{0.0010} falsos positivos por imagen, siete veces menos), con una pérdida de \num{4.5} puntos de recall en humo (\num{0.717} a \num{0.673}) y \num{0.9} en fuego (\num{0.553} a \num{0.544}). Al variar el umbral del clasificador entre \num{0.1} y \num{0.9} se recorre ese compromiso (Fig.~\ref{fig:clf}): con \num{0.8} no queda ningún falso positivo en negativas, pero el recall de humo cae a \num{0.634}. El costo computacional es bajo: el sistema completo tarda \SI{63}{ms} por frame en CPU (\num{0.83} recortes por imagen en promedio), un \SI{12}{\percent} más que el detector solo. H4 se confirma en el test oficial, pero como R1 ya casi no comete errores en esas negativas, el beneficio real del clasificador debe medirse sobre escenas externas a D-Fire (Sección~\ref{sec:estres}).
 
 \begin{figure}[t]
 \centering
@@ -180,14 +181,51 @@ En su validación (recortes de imágenes de entrenamiento separadas por imagen),
 \label{fig:demo}
 \end{figure}
 
-Procesamos dos clips de cobertura periodística de incendios forestales (\SI{60.5}{s} y \SI{41.5}{s}, \SI{50}{fps}) con el sistema completo (R1, clasificador, $\tau=0{,}4$, $K/N=3/5$). En ambos el sistema entra en alerta de humo en torno al primer segundo y de fuego antes de los \SI{7}{s}, y el detector más clasificador corre a 30--40 FPS en la CPU de una notebook.
+Procesamos dos clips de cobertura periodística de incendios forestales (\SI{60.5}{s} y \SI{41.5}{s}, \SI{50}{fps}) con el sistema completo (R1, clasificador, $\tau=0{,}4$, $K/N=3/5$). En ambos el sistema entra en alerta de humo en torno al primer segundo y de fuego antes de los \SI{7}{s}, y el detector más clasificador corre a 30--40 FPS. Esta cifra corresponde a la CPU de una notebook con Apple M4 Pro, más rápida que la del \textit{benchmark} de la Tabla~\ref{tab:runs}, donde el sistema completo procesa 16 FPS.
 
 El experimento dejó una observación de diseño: $N$ debe fijarse en tiempo y no en frames. Procesando todos los frames a \SI{50}{fps}, la ventana de 5 frames cubre \SI{0.1}{s}; el parpadeo natural de las detecciones vacía el buffer y el mismo incendio dispara una alerta nueva cada pocos segundos (49 eventos en los dos clips). Procesando uno de cada diez frames (\SI{5}{fps}, ventana de \SI{1}{s}) los eventos bajan a 12, y en el segundo clip, una única escena continua, a uno por clase. El primer clip es un montaje de varias escenas, por lo que parte de sus eventos corresponde a cortes de edición.
 
 % TODO (si llegan): reemplazar este párrafo por el barrido de barrido_alerta.ipynb
 % (falsas alarmas/hora vs. latencia de alerta para tau y K/N, con y sin clasificador)
 % sobre clips de cámaras fijas con t_evento anotado y un clip sin evento.
-Estos clips no permiten medir la latencia de alerta ni las falsas alarmas por hora, porque el incendio ya es visible desde el primer frame y no incluyen tramos sin evento. Por eso H3 queda evaluada solo de forma cualitativa.
+Estos clips no permiten medir la latencia de alerta, porque el incendio ya es visible desde el primer frame, ni las falsas alarmas, porque no incluyen tramos sin evento. Las falsas alarmas se evalúan aparte sobre video sin incendio (Sección~\ref{sec:estres}); la latencia de alerta queda sin medir.
+
+\subsection{Prueba de estrés sobre video sin incendio}
+\label{sec:estres}
+
+\begin{table}[t]
+\centering
+\caption{Prueba de estrés: frames con algún falso positivo y falsas alarmas en video sin incendio, sin y con clasificador de recortes (R1, $\tau=0{,}4$, $K/N=3/5$, \SI{5}{fps}).}
+\label{tab:estres}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrcccc@{}}
+\toprule
+ & & & \multicolumn{2}{c}{Frames con FP} & \multicolumn{2}{c}{Alertas} \\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Clip & s & Frames & sin & con & sin & con \\
+\midrule
+Niebla en un valle    & 30 & 149 & 4 & 3 & 1 & 1 \\
+Atardecer y noche     & 36 & 180 & 0 & 0 & 0 & 0 \\
+Nublado con tormenta  & 56 & 279 & 3 & 0 & 1 & 0 \\
+Nublado con cúmulos   & 34 & 172 & 0 & 0 & 0 & 0 \\
+\midrule
+Total                 & 156 & 780 & 7 & 3 & 2 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{estres.jpg}
+\caption{Los dos episodios de falso positivo de la prueba de estrés. Izquierda: tormenta; el detector propone humo en casi todo el frame y el clasificador lo descarta ($p_{\mathrm{real}}=0{,}01$). Derecha: niebla baja; el clasificador la confirma ($p_{\mathrm{real}}=1{,}00$) y se emite la alerta.}
+\label{fig:estres}
+\end{figure}
+
+Para medir el sistema fuera de D-Fire procesamos cuatro \textit{timelapses} de cámaras fijas sin fuego ni humo, con condiciones que suelen confundirse con humo: niebla en un valle, un atardecer que termina en noche cerrada y dos cielos nublados, uno de ellos con una tormenta que blanquea la escena. En estos clips toda detección es un falso positivo y toda alerta es una falsa alarma (Tabla~\ref{tab:estres}).
+
+El detector marca humo en 7 de los 780 frames procesados (\SI{0.9}{\percent}) y nunca fuego; en la escena nocturna y en el cielo con cúmulos no produce ninguna detección sobre $\tau$. Seis de esos frames forman dos episodios de tres frames consecutivos, que alcanzan para cumplir el criterio 3 de 5: sin clasificador se emiten dos falsas alarmas. El clasificador responde de forma opuesta en cada episodio (Fig.~\ref{fig:estres}). En la tormenta asigna $p_{\mathrm{real}}\le 0{,}02$ a las tres detecciones y la alarma desaparece. En la niebla, que forma bancos bajos entre los cerros, asigna $p_{\mathrm{real}}$ entre \num{0.83} y \num{1.00} y la alarma se mantiene: a nivel de recorte, esa niebla no se distingue de humo que sale del monte. El sistema completo queda con 3 frames con falso positivo (\SI{0.4}{\percent}) y una falsa alarma.
+
+El resultado es consistente con H4 fuera de D-Fire, aunque con solo dos episodios, y acota H3: el criterio K-de-N descarta detecciones aisladas, pero no confusores que permanecen en la escena. Como los clips son \textit{timelapses}, su dinámica está acelerada y los \SI{156}{s} no equivalen a tiempo real de vigilancia, por lo que no reportamos falsas alarmas por hora.
 
 \subsection{Análisis de errores}
 
@@ -205,17 +243,17 @@ Revisamos los 20 falsos positivos de mayor confianza y los 20 falsos negativos d
 \section{Conclusiones}
 
 \begin{enumerate}
-\item \textbf{Las imágenes negativas son la decisión de datos más importante.} Incluirlas en el entrenamiento reduce 44 veces la fracción de imágenes sin incendio con falsos positivos (\SI{28.8}{\percent} a \SI{0.65}{\percent}) sin pérdida de recall.
+\item \textbf{Las imágenes negativas son la decisión de datos más importante.} Incluirlas en el entrenamiento reduce 44 veces la fracción de imágenes sin incendio con falsos positivos (\SI{28.8}{\percent} a \SI{0.65}{\percent}) con un recall similar (2,0 puntos menos en humo y 0,6 más en fuego).
 \item \textbf{Para CPU, el modelo \textit{nano} es el punto de equilibrio.} El modelo \textit{medium} mejora el mAP50 en solo \num{0.020} con 5,3 veces más latencia; \textit{nano} permite procesar 18 FPS en CPU.
 \item \textbf{La resolución ayuda poco con el fuego incipiente.} Pasar a \SI{960}{px} mejora 3,4 puntos el recall de fuego chico a 1,65 veces el costo, y el recall de esa categoría sigue por debajo de \num{0.45}: es el principal cuello de botella del sistema.
 \item \textbf{El clasificador de recortes es un filtro barato y ajustable.} Con un \SI{12}{\percent} de latencia adicional reduce siete veces los falsos positivos en negativas, a cambio de 4,5 puntos de recall en humo; su umbral es un parámetro operativo.
 \item \textbf{El criterio temporal debe parametrizarse en segundos.} Una ventana definida en frames depende de la tasa de cuadros: a \SI{50}{fps} no filtra nada, mientras que a \SI{5}{fps} los eventos de alerta se reducen cuatro veces.
+\item \textbf{Los confusores persistentes son el límite del sistema.} En video sin incendio el detector marca humo en el \SI{0.9}{\percent} de los frames; el clasificador descarta una tormenta pero no la niebla baja de un valle, y el criterio temporal no filtra ninguno de los dos episodios porque duran varios frames.
 \item \textbf{El test oficial de D-Fire es optimista.} Cerca de la mitad de sus imágenes tienen un casi-duplicado en entrenamiento; recomendamos separar por cámara o escena al evaluar generalización.
 \item \textbf{El mAP de humo subestima la utilidad para alerta.} Muchos falsos positivos de alta confianza son discrepancias de granularidad con la anotación, no errores de presencia.
 \end{enumerate}
 
-\textbf{Limitaciones y trabajo futuro.} Todos los detectores se entrenaron con una sola semilla, por lo que diferencias menores a \num{0.01} de mAP no son concluyentes. La evaluación en video es cualitativa y usa clips periodísticos, no cámaras fijas de vigilancia. Queda pendiente medir falsas alarmas por hora y latencia de alerta sobre secuencias de cámaras fijas con el inicio del evento anotado, como las de FIgLib \cite{dewangan2022figlib}, y evaluar el clasificador sobre un conjunto de estrés externo con nubes, niebla, atardeceres, luces nocturnas y reflejos.
-% TODO: si se arma el set de estrés (analisis_errores.ipynb, sección 7), agregar sus resultados.
+\textbf{Limitaciones y trabajo futuro.} Todos los detectores se entrenaron con una sola semilla, por lo que diferencias menores a \num{0.01} de mAP no son concluyentes. La evaluación en video con incendio es cualitativa y usa clips periodísticos, no cámaras fijas de vigilancia. La prueba de estrés usa cuatro \textit{timelapses} cortos con solo dos episodios de falso positivo, por lo que no permite estimar tasas. Queda pendiente medir falsas alarmas por hora y latencia de alerta sobre secuencias de cámaras fijas en tiempo real con el inicio del evento anotado, como las de FIgLib \cite{dewangan2022figlib}, y ampliar el conjunto de estrés a reflejos, luces nocturnas y humo poco visible.
 
 El código, los pesos entrenados y las instrucciones de reproducción están disponibles en \url{https://github.com/AndreTati/deteccion_incendios}.
 

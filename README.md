@@ -1,6 +1,6 @@
 # Detección temprana de incendios: fuego y humo sobre D-Fire
 
-Trabajo práctico final de Visión por Computadora II (CEIA). El proyecto plantea un sistema de alerta temprana de incendios (fuego y humo) sobre el dataset [D-Fire](https://www.kaggle.com/datasets/sayedgamal99/smoke-fire-detection-yolo), evaluado tanto a nivel frame (detección) como a nivel alerta (falsas alarmas por hora, latencia de alerta), usando un criterio temporal de frames consistentes antes de disparar una alerta.
+Trabajo práctico final de Visión por Computadora II (CEIA). El proyecto plantea un sistema de alerta temprana de incendios (fuego y humo) sobre el dataset [D-Fire](https://www.kaggle.com/datasets/sayedgamal99/smoke-fire-detection-yolo), evaluado a nivel frame (detección por clase, falsos positivos en imágenes negativas y latencia) y sobre video, con un clasificador de recortes y un criterio temporal K-de-N que exige detecciones consistentes antes de disparar una alerta.
 
 ## Entorno
 
@@ -59,8 +59,10 @@ conda env update -f environment.yml --prune
    ```bash
    python demo.py --video videos/humo.mp4 --salida demo_humo.mp4 \
        --detector runs/yolo11n_640_neg_s42/weights/best.pt \
-       --clasificador runs/clasificador/weights/best.pt --tau 0.4 --k 3 --n 5
+       --clasificador runs/clasificador/weights/best.pt --tau 0.4 --k 3 --n 5 --vid-stride 10
    ```
+
+   `--n` se cuenta en frames procesados: elegir `--vid-stride` para procesar unos 5 fps (10 en un video de 50 fps, 6 en uno de 30), así la ventana de 5 frames cubre 1 s.
 
 ## Runs
 
@@ -75,8 +77,12 @@ conda env update -f environment.yml --prune
 
 Nombre de cada run: `{modelo}_{imgsz}_{neg|noneg}_s{seed}`, seed 42, 50 épocas, batch 16.
 
-**Tamaño elegido: `n`.** R3 (`m`) mejora +0,020 de mAP50 en test (0,759 → 0,779) pero es ~5× más lento en CPU (74 → 394 ms/frame en un i7-1355U), lo que también alarga la latencia de alerta. Por eso R4 y R5 usan `n`.
+**Tamaño elegido: `n`.** R3 (`m`) mejora +0,020 de mAP50 en test (0,759 → 0,779) pero es ~5× más lento en CPU (56 → 299 ms/frame en un i7-1355U, `results/benchmark.csv`), lo que también alarga la latencia de alerta. Por eso R4 y R5 usan `n`.
 
 Resultados de test (mAP50 / mAP50-95): R1 0,759 / 0,434 · R3 0,779 / 0,455 · R4 0,773 / 0,444 · R5 0,699 / 0,402. Todas las métricas en `results/master.csv`.
 
-Clasificador de recortes (sobre R1, τ = 0,40, `p_real ≥ 0,5`): en test, las imágenes negativas con algún falso positivo bajan de 0,65 % a 0,10 %, a costa de −4,5 puntos de recall en humo y −0,9 en fuego (`figures/clasificador_recall_vs_fp.png`). Como R1 ya casi no se equivoca con las negativas del test (son casi duplicados de train), su efecto real se mide con el set de estrés y los videos.
+Clasificador de recortes (sobre R1, τ = 0,40, `p_real ≥ 0,5`): en test, las imágenes negativas con algún falso positivo bajan de 0,65 % a 0,10 %, a costa de −4,5 puntos de recall en humo y −0,9 en fuego (`figures/clasificador_recall_vs_fp.png`). Como R1 ya casi no se equivoca con las negativas del test (son casi duplicados de train), su efecto real se mide sobre escenas externas.
+
+Prueba de estrés (`results/estres_video.csv`): cuatro timelapses sin incendio (niebla, atardecer y noche, dos nublados; 156 s, 780 frames a 5 fps) con R1, τ = 0,40 y K/N = 3/5. El detector marca humo en 7 frames y se emiten 2 falsas alarmas; con el clasificador quedan 3 frames y 1 falsa alarma (descarta una tormenta, no la niebla baja de un valle).
+
+No se corrieron el barrido de alerta (`barrido_alerta.ipynb`: falsas alarmas por hora y latencia de alerta) ni el set de estrés por imágenes de `analisis_errores.ipynb`.
