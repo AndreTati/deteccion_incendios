@@ -14,6 +14,8 @@
 \usepackage{xurl}
 \usepackage{xcolor}
 \usepackage{capt-of}
+\usepackage{balance}
+
 
 \graphicspath{{../figures/}{figuras/}}
 \sisetup{detect-all}
@@ -49,7 +51,17 @@ El caso real más visible es el de California. Desde 2023, CAL FIRE y el program
 
 En Argentina, tras el incendio de El Bolsón de 2025, que afectó 221 viviendas, el Servicio de Prevención y Lucha contra Incendios Forestales (SPLIF) de Río Negro incorporó Aleph-fuego, una plataforma desarrollada por INVAP que reconoce columnas de humo en cámaras con cobertura de \ang{360} y envía alertas al centro de monitoreo. El sistema opera en Bariloche y El Bolsón y se está extendiendo a otras localidades de la provincia \cite{rionegro_splif_ia,diarioneuquino2026aleph}.
 
-El objetivo de este trabajo es construir y evaluar un prototipo que, a partir de un flujo de video, emita alertas de fuego o humo con pocas falsas alarmas y latencia compatible con CPU. Nuestras contribuciones son:
+El objetivo de este trabajo es construir y evaluar un prototipo que, a partir de un flujo de video, emita alertas de fuego o humo con pocas falsas alarmas y latencia compatible con CPU. Para guiar las decisiones de diseño planteamos cuatro hipótesis:
+
+\begin{itemize}
+\item \textbf{H1}: Aumentar la resolución de entrada mejora el recall de objetos chicos, en particular del fuego incipiente.
+\item \textbf{H2}: Entrenar con imágenes negativas reduce los falsos positivos sin perder recall.
+\item \textbf{H3}: Un criterio temporal K-de-N reduce las falsas alarmas con una latencia de alerta acotada.
+\item \textbf{H4}: Un clasificador de recortes reduce los falsos positivos con una pérdida de recall acotada.
+\end{itemize}
+
+Nuestras contribuciones son:
+
 \begin{itemize}
 \item Un sistema de tres etapas (detector, clasificador de recortes y criterio temporal K-de-N) con código reproducible y una demo que procesa video en tiempo real.
 \item Un estudio controlado del detector que aísla el efecto de la capacidad del modelo, la resolución de entrada y las imágenes negativas, con métricas por clase y latencia en CPU y GPU.
@@ -86,13 +98,13 @@ La Fig.~\ref{fig:pipeline} resume el sistema. En inferencia, cada frame pasa por
 
 \textbf{Detector.} YOLO11 ajustado sobre D-Fire, con cabeza de dos clases. Entrenamos 50 épocas con batch 16, semilla 42 y el aumento de datos por defecto de Ultralytics (mosaic, variación HSV, volteo horizontal y escalado), aplicado solo en entrenamiento. En inferencia usamos un umbral bajo ($\mathit{conf}_{\min}=0{,}05$) para no descartar candidatos, NMS, y un umbral operativo $\tau$ que decide qué detecciones cuentan para la alerta.
 
-\textbf{Clasificador de recortes.} Cada caja con confianza mayor que $\tau$ se recorta con un margen de contexto del \SI{10}{\percent} por lado y se clasifica con un \texttt{yolo11n-cls} a \SI{224}{px} en \textit{real} o \textit{confundible}. Su dataset se construye solo con imágenes de entrenamiento: los positivos son cajas anotadas y los negativos son falsos positivos del detector sin negativas (R5, ver abajo) sobre las \num{6458} imágenes negativas de entrenamiento. Usamos R5 para minar porque, al no haber visto esas imágenes, sus errores se parecen a los que el sistema cometería en escenas nuevas. Las clases se balancean y la validación se separa por imagen. Una detección se \emph{confirma} si además $p_{\mathrm{real}} \ge 0{,}5$.
+\textbf{Clasificador de recortes.} Cada caja con confianza mayor que $\tau$ se recorta con un margen de contexto del \SI{10}{\percent} por lado y se clasifica con un \texttt{yolo11n-cls} a \SI{224}{px} en \textit{real} o \textit{confundible}. Su dataset se construye solo con imágenes de entrenamiento: los positivos son cajas anotadas y los negativos son falsos positivos del detector sin negativas sobre las \num{6458} imágenes negativas de entrenamiento. Usamos R5 para minar porque, al no haber visto esas imágenes, sus errores se parecen a los que el sistema cometería en escenas nuevas. Las clases se balancean y la validación se separa por imagen. Una detección se \emph{confirma} si además $p_{\mathrm{real}} \ge 0{,}5$.
 
 \textbf{Criterio temporal K-de-N.} Para cada clase se mantiene un buffer de los últimos $N$ frames procesados. Si al menos $K$ tienen una detección confirmada, la clase pasa a \textsc{alerta} y se emite un evento; con entre 1 y $K-1$ está en \textsc{prealerta}. Con histéresis, la clase permanece en alerta hasta que el buffer queda vacío, de modo que un incendio con detecciones intermitentes produce un solo evento. El estado global es el peor de las clases.
 
-\textbf{Interfaz.} La demo genera un video anotado con las cajas (punteadas si el clasificador las descarta), el estado, el contador K/N por clase, la latencia por frame y un registro de eventos (Fig.~\ref{fig:demo}).
+\textbf{Interfaz.} La demo genera un video anotado con las cajas punteadas si el clasificador las descarta, el estado, el contador K/N por clase, la latencia por frame y un registro de eventos (Fig.~\ref{fig:demo}).
 
-\textbf{Diseño experimental.} Entrenamos cuatro detectores para responder hipótesis concretas: R1 (\textit{nano}, \SI{640}{px}, con negativas) como base; R3 (\textit{medium}, \SI{640}{px}) para el compromiso capacidad--latencia; R4 (\textit{nano}, \SI{960}{px}) para H1, \emph{aumentar la resolución mejora el recall de objetos chicos}; y R5 (\textit{nano}, \SI{640}{px}, sin las negativas de entrenamiento) para H2, \emph{entrenar con negativas reduce los falsos positivos sin perder recall}. H3 plantea que \emph{el criterio temporal reduce las falsas alarmas con una latencia de alerta acotada}, y H4 que \emph{el clasificador de recortes reduce los falsos positivos con una pérdida de recall acotada}.
+\textbf{Diseño experimental.} Entrenamos cuatro detectores para responder las hipótesis planteadas en la introducción: R1 (\textit{nano}, \SI{640}{px}, con negativas) como base; R3 (\textit{medium}, \SI{640}{px}) para el compromiso capacidad--latencia; R4 (\textit{nano}, \SI{960}{px}) para H1; y R5 (\textit{nano}, \SI{640}{px}, sin las negativas de entrenamiento) para H2. H4 se evalúa sobre R1 con y sin el clasificador de recortes, en el test de D-Fire y en video sin incendio, y H3 sobre el sistema completo en video.
 
 Además del mAP de Ultralytics, evaluamos cada sistema a un punto de operación fijo ($\tau=0{,}4$): emparejamos predicciones y cajas anotadas de la misma clase con IoU $\ge 0{,}5$, de mayor a menor confianza, y reportamos precisión, recall y la fracción de las \num{2005} imágenes negativas de prueba con al menos un falso positivo, que es la métrica más cercana a una falsa alarma. La latencia se mide en CPU (Intel Core i7 de 13.ª generación, batch 1, 100 imágenes de calentamiento y 300 medidas) y en GPU (NVIDIA L4).
 
@@ -257,6 +269,7 @@ Revisamos los 20 falsos positivos de mayor confianza y los 20 falsos negativos d
 
 El código, los pesos entrenados y las instrucciones de reproducción están disponibles en \url{https://github.com/AndreTati/deteccion_incendios}.
 
+\balance
 \twocolumn[{%
   \centering
   \includegraphics[width=\textwidth]{errores_fp_humo.jpg}
