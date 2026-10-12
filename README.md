@@ -41,6 +41,7 @@ conda env update -f environment.yml --prune
 | `recortes.py` | Recorte con margen para el clasificador (idéntico al entrenar y al usar) |
 | `evaluacion.py` | Emparejamiento predicción ↔ ground truth a un punto de operación |
 | `demo.py` | Video → sistema completo → MP4 anotado con HUD |
+| `app.py` | Interfaz web (Gradio): archivo de video, cámara IP o webcam, con τ, K, N y clasificador ajustables en vivo |
 
 `train`, `clasificador`, `benchmark` y `analisis_errores` tienen `SMOKE_TEST = True` para probar el pipeline sin GPU ni modelos entrenados; `inferencia_video` usa pesos de COCO si todavía no hay detector.
 
@@ -73,6 +74,13 @@ conda env update -f environment.yml --prune
    ```
 
    `--n` se cuenta en frames procesados: elegir `--vid-stride` para procesar unos 5 fps (10 en un video de 50 fps, 6 en uno de 30), así la ventana de 5 frames cubre 1 s.
+10. Interfaz web:
+
+    ```bash
+    python app.py            # http://127.0.0.1:7860 (--share para un link público temporal)
+    ```
+
+    Pestañas de video (archivo o URL rtsp/http de una cámara IP), webcam (un frame cada 0,2 s) e imagen suelta. El panel lateral elige el detector y ajusta τ, K, N y el clasificador mientras corre el video; cada cambio reinicia la ventana K-de-N. Muestra el mismo HUD que `demo.py`, el estado NORMAL / PRE-ALERTA / ALERTA, el registro de alertas y un aviso en pantalla en cada alerta.
 
 ## Runs
 

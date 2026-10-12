@@ -102,7 +102,7 @@ La Fig.~\ref{fig:pipeline} resume el sistema. En inferencia, cada frame pasa por
 
 \textbf{Criterio temporal K-de-N.} Para cada clase se mantiene un buffer de los últimos $N$ frames procesados. Si al menos $K$ tienen una detección confirmada, la clase pasa a \textsc{alerta} y se emite un evento; con entre 1 y $K-1$ está en \textsc{prealerta}. Con histéresis, la clase permanece en alerta hasta que el buffer queda vacío, de modo que un incendio con detecciones intermitentes produce un solo evento. El estado global es el peor de las clases.
 
-\textbf{Interfaz.} La demo genera un video anotado con las cajas punteadas si el clasificador las descarta, el estado, el contador K/N por clase, la latencia por frame y un registro de eventos (Fig.~\ref{fig:demo}).
+\textbf{Interfaz.} Una aplicación web en Gradio procesa un video, una cámara IP o una webcam con $\tau$, $K$, $N$ y el umbral del clasificador ajustables en vivo, y muestra las cajas (punteadas si el clasificador las descarta), el estado, el contador K/N por clase, la latencia por frame y un registro de eventos (Fig.~\ref{fig:demo}).
 
 \textbf{Diseño experimental.} Entrenamos cuatro detectores para responder las hipótesis planteadas en la introducción: R1 (\textit{nano}, \SI{640}{px}, con negativas) como base; R3 (\textit{medium}, \SI{640}{px}) para el compromiso capacidad--latencia; R4 (\textit{nano}, \SI{960}{px}) para H1; y R5 (\textit{nano}, \SI{640}{px}, sin las negativas de entrenamiento) para H2. H4 se evalúa sobre R1 con y sin el clasificador de recortes, en el test de D-Fire y en video sin incendio, y H3 sobre el sistema completo en video.
 
