@@ -1,0 +1,8 @@
+{
+  "video": "../Videos-para-latencia/20190717-FIRE-lp-n-mobo-c.mp4",
+  "secuencia": "20190717_FIRE_lp-n-mobo-c",
+  "detector": "runs/yolo11m_640_neg_s42/weights/best.pt",
+  "imgsz": 640,
+  "clasificador": "runs/clasificador/weights/best.pt",
+  "tiempo": "real, offset FIgLib en segundos (1 frame = 1 foto, ~1 min)"
+}
