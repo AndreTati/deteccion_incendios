@@ -1,0 +1,8 @@
+{
+  "video": "../Videos-para-latencia/20190716-Meadowfire-hp-n-mobo-c.mp4",
+  "secuencia": "20190716_Meadowfire_hp-n-mobo-c",
+  "detector": "runs/yolo11n_960_neg_s42/weights/best.pt",
+  "imgsz": 960,
+  "clasificador": "runs/clasificador/weights/best.pt",
+  "tiempo": "real, offset FIgLib en segundos (1 frame = 1 foto, ~1 min)"
+}

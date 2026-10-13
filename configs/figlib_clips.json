@@ -1,0 +1,18 @@
+{
+  "meadowfire": {
+    "secuencia": "20190716_Meadowfire_hp-n-mobo-c",
+    "video": "../Videos-para-latencia/20190716-Meadowfire-hp-n-mobo-c.mp4",
+    "t_evento_s": 600,
+    "roi": [1200, 550, 1700, 830],
+    "notas": "Humo lejano en el valle, centro de la imagen. Primer rastro con zoom en +540; visible a resolución original desde +600. Mancha de rocas claras abajo al centro (~1150,1310) detectada como humo en todas las fotos.",
+    "offsets_s": [-2400, -2340, -2280, -2220, -2160, -2100, -2040, -1980, -1920, -1860, -1800, -1740, -1680, -1620, -1560, -1500, -1440, -1380, -1320, -1260, -1200, -1140, -1080, -960, -900, -839, -780, -720, -660, -600, -540, -480, -420, -360, -300, -240, -180, -120, -60, 0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140, 1200, 1260, 1320, 1380, 1440, 1500, 1560, 1620, 2280, 2340, 2400]
+  },
+  "lyons_peak": {
+    "secuencia": "20190717_FIRE_lp-n-mobo-c",
+    "video": "../Videos-para-latencia/20190717-FIRE-lp-n-mobo-c.mp4",
+    "t_evento_s": 60,
+    "roi": [450, 900, 1700, 1250],
+    "notas": "Columna de humo detrás de un cerro, a la izquierda; se vuelve una capa horizontal. Primer hilo visible en +60 (anotación independiente: +120). Sol bajo a la izquierda.",
+    "offsets_s": [-2400, -2340, -2280, -2220, -2160, -2100, -2040, -1979, -1920, -1860, -1800, -1740, -1680, -1620, -1560, -1498, -1440, -1380, -1320, -1260, -1200, -1140, -1080, -1020, -960, -900, -840, -780, -720, -660, -600, -540, -480, -420, -360, -300, -240, -180, -120, -60, 0, 60, 120, 180, 240, 300, 360, 421, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1141, 1200, 1262, 1320, 1380, 1440, 1500, 1560, 1620, 1680, 1741, 1800, 1861, 1920, 1980, 2040, 2100, 2160, 2220, 2280, 2340, 2400]
+  }
+}
